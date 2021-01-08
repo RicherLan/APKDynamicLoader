@@ -13,12 +13,12 @@ import dalvik.system.DexClassLoader;
  */
 public class DLPluginPackage {
 
-  private String mPackageName; //包名
-  private String mDefaultActivity; //默认类名
-  private DexClassLoader mDexClassLoader; //Dex加载器
-  private PackageInfo mPackageInfo;
-  private AssetManager mAssetManager;
-  private Resources mResources;
+  public String mPackageName; //包名
+  public String mDefaultActivity; //默认类名
+  public DexClassLoader mDexClassLoader; //Dex加载器
+  public PackageInfo mPackageInfo;
+  public AssetManager mAssetManager;
+  public Resources mResources;
 
   public DLPluginPackage(
       DexClassLoader dexClassLoader,

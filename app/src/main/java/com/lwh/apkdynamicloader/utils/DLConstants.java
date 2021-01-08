@@ -7,6 +7,7 @@ package com.lwh.apkdynamicloader.utils;
  */
 public class DLConstants {
 
+  public static final String FROM = "extra.from";
   // 插件自己内部调用的
   public static final int FROM_INTERNAL = 0;
   // 插件外部调用的

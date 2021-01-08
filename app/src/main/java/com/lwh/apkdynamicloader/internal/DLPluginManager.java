@@ -5,11 +5,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -84,7 +86,7 @@ public class DLPluginManager {
 
   @NonNull
   private DLPluginPackage preparePluginEnv(PackageInfo packageInfo, String dexpath) {
-    DLPluginPackage pluginPackage = mPluginPackagesHolder.get(packageInfo.packageName);
+    DLPluginPackage pluginPackage = getPluginPackage(packageInfo.packageName);
     if (pluginPackage != null) {
       return pluginPackage;
     }
@@ -140,6 +142,72 @@ public class DLPluginManager {
   // 拷贝.so文件到
   private void copySoLib(String dexPath) {
     SoLibManager.getInstace().copySoLib(mContext, dexPath, mNativeLibDir);
+  }
+
+  public DLPluginPackage getPluginPackage(String packageName) {
+    return mPluginPackagesHolder.get(packageName);
+  }
+
+  public int startPluginActivity(Context context, DLIntent dlIntent) {
+    return startPluginActivityForResult(context, dlIntent, -1);
+  }
+
+  public int startPluginActivityForResult(Context context, DLIntent dlIntent, int requestCode) {
+    // 插件内部自己打开
+    if (mFrom == DLConstants.FROM_INTERNAL) {
+      dlIntent.setClassName(context, dlIntent.getPluginClass());
+      performPluginActivityForResult(context, dlIntent, requestCode);
+      return START_RESULT_SUCCESS;
+    }
+    String packageName = dlIntent.getPluginPackage();
+    if (TextUtils.isEmpty(packageName)) {
+      throw new NullPointerException("disallow no packageName!");
+    }
+
+    DLPluginPackage dlPluginPackage = mPluginPackagesHolder.get(packageName);
+    if (dlPluginPackage == null) {
+      return START_RESULT_NO_PACKAGE;
+    }
+    final String className = getPluginActivityFullPath(dlIntent, dlPluginPackage);
+    Class<?> clazz = loadPluginClass(dlPluginPackage.mDexClassLoader,className);
+    if(clazz == null){
+      return START_RESULT_NO_CLASS;
+    }
+
+
+  }
+
+  private void performPluginActivityForResult(Context context, DLIntent dlIntent, int requestCode) {
+    if (context instanceof Activity) {
+      ((Activity) context).startActivityForResult(dlIntent, requestCode);
+    } else {
+      context.startActivity(dlIntent);
+    }
+  }
+
+  // 获得activity的完成路径(包名+类名)
+  private String getPluginActivityFullPath(@NonNull DLIntent dlIntent,
+      @NonNull DLPluginPackage dlPluginPackage) {
+    String className = dlIntent.getPluginClass() == null
+        ? dlPluginPackage.mDefaultActivity
+        : dlIntent.getPluginClass();
+    if (className.startsWith(".")) {
+      return dlIntent.getPluginPackage() + className;
+    }
+    return className;
+  }
+
+  // 加载class
+  @Nullable
+  private Class<?> loadPluginClass(ClassLoader classLoader,String className){
+    Class<?> clazz = null;
+    try {
+      clazz = Class.forName(className,true,classLoader);
+          classLoader.loadClass(className);
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    }
+    return clazz;
   }
 
   private static class InstanceGenerator {
