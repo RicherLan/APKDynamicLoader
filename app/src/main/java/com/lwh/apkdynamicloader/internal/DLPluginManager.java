@@ -15,6 +15,8 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.lwh.apkdynamicloader.component.DLBasePluginActivity;
+import com.lwh.apkdynamicloader.component.DLProxyActivity;
 import com.lwh.apkdynamicloader.utils.DLConstants;
 import com.lwh.apkdynamicloader.utils.SoLibManager;
 
@@ -174,6 +176,17 @@ public class DLPluginManager {
       return START_RESULT_NO_CLASS;
     }
 
+    Class<? extends Activity> activityClass = getProxyActivityClass(clazz);
+    if (activityClass == null) {
+      return START_RESULT_TYPE_ERROR;
+    }
+
+    // put extra data
+    dlIntent.putExtra(DLConstants.EXTRA_CLASS, className);
+    dlIntent.putExtra(DLConstants.EXTRA_PACKAGE, packageName);
+    dlIntent.setClass(mContext, activityClass);
+    performPluginActivityForResult(context, dlIntent, requestCode);
+    return START_RESULT_SUCCESS;
 
   }
 
@@ -208,6 +221,15 @@ public class DLPluginManager {
       e.printStackTrace();
     }
     return clazz;
+  }
+
+  private Class<? extends Activity> getProxyActivityClass(Class<?> clazz) {
+    Class<? extends Activity> activityClass = null;
+    if (DLBasePluginActivity.class.isAssignableFrom(clazz)) {
+      activityClass = DLProxyActivity.class;
+    }
+
+    return activityClass;
   }
 
   private static class InstanceGenerator {

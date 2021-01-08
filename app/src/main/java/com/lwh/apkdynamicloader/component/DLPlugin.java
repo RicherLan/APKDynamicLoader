@@ -14,7 +14,7 @@ import com.lwh.apkdynamicloader.internal.DLPluginPackage;
  * created on: 1/8/21 10:52 AM
  * description: 内外部通信接口
  */
-public interface DLPLugin {
+public interface DLPlugin {
 
   public void attach(Activity proxyActivity, DLPluginPackage pluginPackage);
 

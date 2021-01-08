@@ -3,7 +3,6 @@ package com.lwh.apkdynamicloader.component;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -26,9 +25,11 @@ import com.lwh.apkdynamicloader.utils.DLConstants;
 /**
  * author: lanweihua
  * created on: 1/8/21 11:04 AM
- * description:
+ * description: 插件的activity要继承这个基类。
+ * 插件内部自己调用时，按照正常的程序走，不绑定代理类
+ * 外部调用插件的时候，会绑定代理类，代理类中转生命周期
  */
-public class DLBasePluginActivity extends Activity implements DLPLugin {
+public class DLBasePluginActivity extends Activity implements DLPlugin {
 
   private static final String TAG = "DLBasePluginActivity";
 
@@ -51,10 +52,10 @@ public class DLBasePluginActivity extends Activity implements DLPLugin {
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    if(savedInstanceState!=null){
+    if (savedInstanceState != null) {
       mFrom = savedInstanceState.getInt(DLConstants.FROM);
     }
-    if(isFromInternal()){
+    if (isFromInternal()) {
       super.onCreate(savedInstanceState);
       mProxyActivity = this;
       that = this;
@@ -333,7 +334,7 @@ public class DLBasePluginActivity extends Activity implements DLPLugin {
   }
 
   // 是否是插件内部调用的
-  private boolean isFromInternal(){
+  private boolean isFromInternal() {
     return mFrom == DLConstants.FROM_INTERNAL;
   }
 

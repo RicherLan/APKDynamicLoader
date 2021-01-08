@@ -13,7 +13,8 @@ public class DLConstants {
   // 插件外部调用的
   public static final int FROM_EXTERNAL = 1;
 
-
+  public static final String EXTRA_PACKAGE = "extra.package";
+  public static final String EXTRA_CLASS = "extra.class";
 
 
 }
